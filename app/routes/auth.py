@@ -3,11 +3,10 @@ import os
 from datetime import datetime, timedelta
 import secrets
 from flask_login import login_user, current_user, logout_user, login_required
-from app import db, bcrypt, mail
+from app import db, bcrypt
 from app.models.user import User
 from app.forms import LoginForm, SignupForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.utils import send_verification_email, send_reset_email
-from flask_mail import Message
 
 auth_bp = Blueprint('auth_blueprint', __name__, url_prefix='/auth')
 
