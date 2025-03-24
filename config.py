@@ -25,7 +25,7 @@ class Config:
     # Session Configuration
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
     
-    '''
+    
     
     # Mail Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.example.com')
@@ -42,5 +42,3 @@ class Config:
     # Default Admin
     DEFAULT_ADMIN_EMAIL = os.environ.get('DEFAULT_ADMIN_EMAIL', 'admin@library.com')
     DEFAULT_ADMIN_PASSWORD = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'Admin@123')
-
-    '''

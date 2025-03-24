@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="profile-avatar">
+                        {{ current_user.name[0] | upper }}
+                    </div>
+                    <h3 class="mt-3">{{ current_user.name }}</h3>
+                    <p class="text-muted">{{ current_user.email }}</p>
+                    <p><span class="badge bg-{{ 'primary' if current_user.is_admin else 'secondary' }}">
+                        {{ 'Admin' if current_user.is_admin else 'User' }}
+                    </span></p>
+                    <p class="text-muted small">Member since {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Statistics</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Currently Borrowed
+                        <span class="badge bg-primary rounded-pill">
+                            {{ current_user.get_current_borrows()|length }}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Books Borrowed
+                        <span class="badge bg-primary rounded-pill">
+                            {{ current_user.get_borrow_history()|length }}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Overdue Books
+                        <span class="badge bg-{{ 'danger' if current_user.has_overdue_books() else 'success' }} rounded-pill">
+                            {{ current_user.get_current_borrows()|selectattr('is_overdue')|list|length }}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {% if form.name.errors %}
+                                {{ form.name(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.name(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {% if form.email.errors %}
+                                {{ form.email(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.email(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Security</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Password</h6>
+                        <p class="text-muted">Change your password to keep your account secure.</p>
+                        <button type="button" class="btn btn-outline-secondary" 
+                                data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            Change Password
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <h6>Account Deactivation</h6>
+                        <p class="text-muted">Deactivating your account will make your profile and data inaccessible.</p>
+                        <button type="button" class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
+                            Deactivate Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                        <div class="form-text">
+                            Password must be at least 8 characters with at least one uppercase letter, 
+                            one lowercase letter, one number, and one special character.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmNewPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Change Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Account Modal -->
+<div class="modal fade" id="deactivateAccountModal" tabindex="-1" aria-labelledby="deactivateAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deactivateAccountModalLabel">Deactivate Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to deactivate your account? You will no longer be able to:</p>
+                <ul>
+                    <li>Log into your account</li>
+                    <li>Borrow books from the library</li>
+                    <li>Access your borrowing history</li>
+                </ul>
+                <p>If you have any outstanding books, you must return them before deactivating your account.</p>
+                <form id="deactivateForm">
+                    <div class="mb-3">
+                        <label for="confirmDeactivate" class="form-label">Type "DELETE" to confirm</label>
+                        <input type="text" class="form-control" id="confirmDeactivate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" disabled>Deactivate Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enable/disable deactivate button based on confirmation text
+        const confirmDeactivateInput = document.getElementById('confirmDeactivate');
+        const deactivateButton = document.querySelector('#deactivateAccountModal .btn-danger');
+        
+        if (confirmDeactivateInput && deactivateButton) {
+            confirmDeactivateInput.addEventListener('input', function() {
+                deactivateButton.disabled = this.value !== 'DELETE';
+            });
+        }
+        
+        // Password confirmation validation
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+        
+        if (confirmNewPasswordInput && newPasswordInput) {
+            confirmNewPasswordInput.addEventListener('input', function() {
+                if (this.value !== newPasswordInput.value) {
+                    this.setCustomValidity("Passwords don't match");
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

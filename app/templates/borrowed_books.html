@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Books</h1>
+        <a href="{{ url_for('user_blueprint.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Currently Borrowed Books</h5>
+        </div>
+        <div class="card-body">
+            {% if current_borrows %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Author</th>
+                            <th>Borrowed</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for borrow in current_borrows %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('books_blueprint.book_detail', book_id=borrow.book.id) }}">
+                                    {{ borrow.book.title }}
+                                </a>
+                            </td>
+                            <td>{{ borrow.book.author }}</td>
+                            <td>{{ borrow.borrow_date.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                <span class="{% if borrow.is_overdue %}text-danger fw-bold{% endif %}">
+                                    {{ borrow.due_date.strftime('%b %d, %Y') }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if borrow.is_overdue %}
+                                <span class="badge bg-danger">
+                                    Overdue by {{ borrow.days_overdue }} days
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success">
+                                    {{ (borrow.due_date - borrow.borrow_date.utcnow()).days }} days left
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <form action="{{ url_for('books_blueprint.return_book', borrow_id=borrow.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-arrow-return-left"></i> Return
+                                        </button>
+                                    </form>
+                                    {% if not borrow.is_overdue %}
+                                    <form action="{{ url_for('books_blueprint.renew_book', borrow_id=borrow.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-arrow-repeat"></i> Renew
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted my-4">You don't have any books currently borrowed.</p>
+            <div class="text-center">
+                <a href="{{ url_for('books_blueprint.book_list') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-book"></i> Browse Books
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Borrowing History</h5>
+        </div>
+        <div class="card-body">
+            {% if borrow_history %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Author</th>
+                            <th>Borrowed</th>
+                            <th>Returned</th>
+                            <th>Fine</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for borrow in borrow_history %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('books_blueprint.book_detail', book_id=borrow.book.id) }}">
+                                    {{ borrow.book.title }}
+                                </a>
+                            </td>
+                            <td>{{ borrow.book.author }}</td>
+                            <td>{{ borrow.borrow_date.strftime('%b %d, %Y') }}</td>
+                            <td>{{ borrow.return_date.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                {% if borrow.fine_amount > 0 %}
+                                <span class="text-danger">${{ "%.2f"|format(borrow.fine_amount) }}</span>
+                                {% else %}
+                                <span class="text-success">No fine</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted my-4">You haven't returned any books yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

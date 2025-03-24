@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">Create an Account</h2>
+                    
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                {{ form.name.label(class="form-label required") }}
+                                {% if form.name.errors %}
+                                    {{ form.name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.name(class="form-control", placeholder="Enter your full name") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.email.label(class="form-label required") }}
+                                {% if form.email.errors %}
+                                    {{ form.email(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.email(class="form-control", placeholder="Enter your email") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                {{ form.password.label(class="form-label required") }}
+                                <div class="input-group">
+                                    {% if form.password.errors %}
+                                        {{ form.password(class="form-control is-invalid", id="password") }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password" aria-label="Show password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.password(class="form-control", placeholder="Create a password", id="password") }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password" aria-label="Show password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                <div class="form-text">
+                                    Password must be at least 8 characters with at least one uppercase letter, 
+                                    one lowercase letter, one number, and one special character.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.confirm_password.label(class="form-label required") }}
+                                <div class="input-group">
+                                    {% if form.confirm_password.errors %}
+                                        {{ form.confirm_password(class="form-control is-invalid", id="confirm_password") }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#confirm_password" aria-label="Show password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback">
+                                            {% for error in form.confirm_password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.confirm_password(class="form-control", placeholder="Confirm your password", id="confirm_password") }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#confirm_password" aria-label="Show password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.accept_tos(class="form-check-input") }}
+                            {{ form.accept_tos.label(class="form-check-label") }}
+                            {% if form.accept_tos.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.accept_tos.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p>Already have an account? <a href="{{ url_for('auth_blueprint.login') }}">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

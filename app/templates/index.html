@@ -1,0 +1,249 @@
+{% extends "base.html" %} {% block title %}Home - Library Management System{%
+endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-dark text-white py-5 rounded">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 mb-4">Welcome to LibSys</h1>
+        <p class="lead mb-4">
+          Your modern library management system. Browse our collection, borrow
+          books, and track your reading history all in one place.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+          <a
+            href="{{ url_for('books_blueprint.book_list') }}"
+            class="btn btn-primary btn-lg px-4 me-md-2"
+          >
+            <i class="bi bi-search me-2"></i>Browse Books
+          </a>
+          {% if not current_user.is_authenticated %}
+          <a
+            href="{{ url_for('auth_blueprint.signup') }}"
+            class="btn btn-outline-light btn-lg px-4"
+          >
+            <i class="bi bi-person-plus me-2"></i>Join Now
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-block text-center">
+        <i class="bi bi-book text-primary" style="font-size: 12rem"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-5">Our Features</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-search text-primary mb-3"></i>
+            <h4 class="card-title">Browse Collection</h4>
+            <p class="card-text">
+              Search our extensive catalog by title, author, or genre to find
+              your next great read.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-journal-check text-primary mb-3"></i>
+            <h4 class="card-title">Borrow & Return</h4>
+            <p class="card-text">
+              Easily borrow books online and keep track of your due dates and
+              reading history.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-bell text-primary mb-3"></i>
+            <h4 class="card-title">Notifications</h4>
+            <p class="card-text">
+              Receive email reminders for due dates and notifications about new
+              arrivals.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent Books Section -->
+{% if recent_books %}
+<section class="py-5 bg-dark text-white rounded">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-0">Recent Additions</h2>
+      <a
+        href="{{ url_for('books_blueprint.book_list') }}"
+        class="btn btn-outline-light"
+        >View All Books</a
+      >
+    </div>
+    <div class="row g-4">
+      {% for book in recent_books %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card book-card h-100 bg-dark border">
+          <div class="card-body">
+            <span
+              class="badge {% if book.available_copies > 0 %}badge-available{% else %}badge-unavailable{% endif %} float-end"
+            >
+              {% if book.available_copies > 0 %}Available{% else %}Unavailable{%
+              endif %}
+            </span>
+            <h5 class="card-title text-truncate">{{ book.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
+            <p class="card-text small">
+              <span class="badge bg-secondary me-2">{{ book.genre }}</span>
+              <small class="text-muted"
+                >Added {{ book.created_at.strftime('%Y-%m-%d') }}</small
+              >
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <a
+                href="{{ url_for('books_blueprint.book_detail', book_id=book.id) }}"
+                class="btn btn-sm btn-outline-primary"
+                >Details</a
+              >
+              {% if current_user.is_authenticated and book.available_copies > 0
+              %}
+              <form
+                action="{{ url_for('books_blueprint.borrow_book', book_id=book.id) }}"
+                method="post"
+                class="d-inline"
+              >
+                <button type="submit" class="btn btn-sm btn-primary">
+                  Borrow
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- How It Works Section -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-5">How It Works</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="timeline">
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div
+                  class="bg-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="bi bi-person-plus text-white"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">Sign Up for an Account</h4>
+                  <p class="text-muted mb-0">
+                    Create an account to access all library features
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div
+                  class="bg-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i
+                    class="bi bi-search text-white"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">Browse and Search for Books</h4>
+                  <p class="text-muted mb-0">
+                    Find books by title, author, or genre
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div
+                  class="bg-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i
+                    class="bi bi-journal-arrow-down text-white"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">Borrow Your Books</h4>
+                  <p class="text-muted mb-0">Borrow books with just a click</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div
+                  class="bg-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
+                  <i
+                    class="bi bi-journal-check text-white"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">Return When You're Done</h4>
+                  <p class="text-muted mb-0">
+                    Return books and track your reading history
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action -->
+{% if not current_user.is_authenticated %}
+<section class="py-5 bg-primary text-white text-center rounded">
+  <div class="container">
+    <h2 class="mb-4">Ready to get started?</h2>
+    <p class="lead mb-4">
+      Join our library today and discover a world of books at your fingertips.
+    </p>
+    <a href="{{ url_for('auth_blueprint.signup') }}" class="btn btn-light btn-lg"
+      >Create an Account</a
+    >
+  </div>
+</section>
+{% endif %} {% endblock %}

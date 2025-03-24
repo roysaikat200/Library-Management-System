@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Book - {{ book.title }} - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Edit Book</h3>
+                    <span class="badge {% if book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ book.available_copies }}/{{ book.total_copies }} Available
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label required") }}
+                            {% if form.title.errors %}
+                                {{ form.title(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.title(class="form-control", placeholder="Enter book title") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.author.label(class="form-label required") }}
+                            {% if form.author.errors %}
+                                {{ form.author(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.author.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.author(class="form-control", placeholder="Enter author name") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.genre.label(class="form-label required") }}
+                            {% if form.genre.errors %}
+                                {{ form.genre(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.genre.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.genre(class="form-control", placeholder="Enter genre (e.g., Fiction, Science, History)") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {% if form.description.errors %}
+                                {{ form.description(class="form-control is-invalid", rows=4) }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.description(class="form-control", rows=4, placeholder="Enter book description") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.total_copies.label(class="form-label required") }}
+                            {% if form.total_copies.errors %}
+                                {{ form.total_copies(class="form-control is-invalid", min=1) }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.total_copies.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.total_copies(class="form-control", min=1) }}
+                            {% endif %}
+                            <div class="form-text">
+                                Enter the total number of copies. Currently borrowed: {{ book.total_copies - book.available_copies }}.
+                                <strong>Note:</strong> You cannot reduce total copies below currently borrowed amount.
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('books_blueprint.book_list') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Added on: {{ book.created_at.strftime('%Y-%m-%d') }}
+                        </small>
+                        <form action="{{ url_for('books_blueprint.delete_book', book_id=book.id) }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger delete-book"
+                                    {% if book.available_copies < book.total_copies %}disabled{% endif %}>
+                                <i class="bi bi-trash me-1"></i>Delete Book
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link
+      href="{{ url_for('static', filename='styles.css') }}"
+      rel="stylesheet"
+    />
+    {% block styles %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('user_blueprint.index') }}">
+          <i class="bi bi-book me-2"></i>LibSys
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'user.index' %}active{% endif %}"
+                href="{{ url_for('user_blueprint.index') }}"
+              >
+                Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'books.book_list' %}active{% endif %}"
+                href="{{ url_for('books_blueprint.book_list') }}"
+              >
+                Books
+              </a>
+            </li>
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'user.dashboard' %}active{% endif %}"
+                href="{{ url_for('user_blueprint.dashboard') }}"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'user.borrowed_books' %}active{% endif %}"
+                href="{{ url_for('user_blueprint.borrowed_books') }}"
+              >
+                My Books
+              </a>
+            </li>
+            {% if current_user.is_admin %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Admin
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_blueprint.admin_dashboard') }}"
+                  >
+                    Dashboard
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('books_blueprint.add_book') }}"
+                  >
+                    Add Book
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_blueprint.manage_users') }}"
+                  >
+                    Manage Users
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('user_blueprint.admin_reports') }}"
+                  >
+                    Reports
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% endif %} {% endif %}
+          </ul>
+          <ul class="navbar-nav">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-person-circle me-1"></i>{{ current_user.name }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('user_blueprint.profile') }}">
+                    <i class="bi bi-person me-2"></i>Profile
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('auth_blueprint.logout') }}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}"
+                href="{{ url_for('auth_blueprint.login') }}"
+              >
+                Login
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'auth.signup' %}active{% endif %}"
+                href="{{ url_for('auth_blueprint.signup') }}"
+              >
+                Sign Up
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="alert alert-{{ category }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container content">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <h5 class="mb-3">LibSys - Library Management System</h5>
+            <p class="small">
+              A modern library management solution for organizing books,
+              managing borrowing, and tracking returns.
+            </p>
+          </div>
+          <div class="col-md-3">
+            <h5 class="mb-3">Quick Links</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="{{ url_for('user_blueprint.index') }}" class="text-light"
+                  >Home</a
+                >
+              </li>
+              <li>
+                <a href="{{ url_for('books_blueprint.book_list') }}" class="text-light"
+                  >Books</a
+                >
+              </li>
+              {% if current_user.is_authenticated %}
+              <li>
+                <a href="{{ url_for('user_blueprint.dashboard') }}" class="text-light"
+                  >Dashboard</a
+                >
+              </li>
+              <li>
+                <a href="{{ url_for('user_blueprint.profile') }}" class="text-light"
+                  >Profile</a
+                >
+              </li>
+              {% else %}
+              <li>
+                <a href="{{ url_for('auth_blueprint.login') }}" class="text-light"
+                  >Login</a
+                >
+              </li>
+              <li>
+                <a href="{{ url_for('auth_blueprint.signup') }}" class="text-light"
+                  >Sign Up</a
+                >
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <h5 class="mb-3">Contact</h5>
+            <ul class="list-unstyled">
+              <li><i class="bi bi-envelope me-2"></i>library@example.com</li>
+              <li><i class="bi bi-telephone me-2"></i>+1 (123) 456-7890</li>
+              <li>
+                <i class="bi bi-geo-alt me-2"></i>123 Library Street, Booktown
+              </li>
+            </ul>
+          </div>
+        </div>
+        <hr class="my-4" />
+        <div class="text-center">
+          <p class="mb-0">
+            &copy; 2023 Library Management System. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

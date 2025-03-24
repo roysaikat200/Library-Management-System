@@ -42,15 +42,15 @@ def create_app(config_class=Config):
     app.register_blueprint(books)
     app.register_blueprint(user)
 
-    # # Create database tables if they don't exist
-    # with app.app_context():
-    #     db.create_all()
+    # Create database tables if they don't exist
+    with app.app_context():
+        db.create_all()
         
-    #     # Check if admin user exists, if not create one
-    #     from app.models.user import User
-    #     admin = User.query.filter_by(role='admin').first()
-    #     if not admin:
-    #         from app.utils import create_default_admin
-    #         create_default_admin()
+        # Check if admin user exists, if not create one
+        from app.models.user import User
+        admin = User.query.filter_by(role='admin').first()
+        if not admin:
+            from app.utils import create_default_admin
+            create_default_admin()
     
     return app

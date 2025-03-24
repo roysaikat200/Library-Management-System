@@ -1,0 +1,193 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container py-4">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card shadow mb-4">
+        <div class="card-body text-center">
+          <div class="display-1 mb-3">
+            <i class="bi bi-book text-primary"></i>
+          </div>
+          <h2 class="card-title mb-3">{{ book.title }}</h2>
+          <p class="fs-5 text-muted mb-1">By {{ book.author }}</p>
+          <span class="badge bg-secondary mb-3">{{ book.genre }}</span>
+
+          <div class="d-flex justify-content-around mt-4">
+            <div class="text-center">
+              <h5>Total</h5>
+              <p class="fs-4">{{ book.total_copies }}</p>
+            </div>
+            <div class="text-center">
+              <h5>Available</h5>
+              <p
+                class="fs-4 {% if book.available_copies == 0 %}text-danger{% elif book.available_copies < book.total_copies // 2 %}text-warning{% else %}text-success{% endif %}"
+              >
+                {{ book.available_copies }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if current_user.is_authenticated %}
+      <div class="card shadow">
+        <div class="card-body">
+          <h5 class="card-title">Actions</h5>
+          <div class="d-grid gap-2">
+            {% if book.available_copies > 0 %}
+            <form
+              method="POST"
+              action="{{ url_for('books_blueprint.borrow_book', book_id=book.id) }}"
+            >
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-journal-arrow-down me-2"></i> Borrow
+              </button>
+            </form>
+            {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>
+              <i class="bi bi-journal-x me-2"></i> Unavailable
+            </button>
+            {% endif %} {% if current_user.is_admin %}
+            <a
+              href="{{ url_for('books_blueprint.edit_book', book_id=book.id) }}"
+              class="btn btn-outline-primary"
+            >
+              <i class="bi bi-pencil-square me-2"></i> Edit
+            </a>
+            <button
+              type="button"
+              class="btn btn-outline-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteBookModal"
+            >
+              <i class="bi bi-trash me-2"></i> Delete
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-md-8">
+      <div class="card shadow mb-4">
+        <div class="card-header">
+          <h4 class="mb-0">Description</h4>
+        </div>
+        <div class="card-body">
+          {% if book.description %}
+          <p class="lead">{{ book.description }}</p>
+          {% else %}
+          <p class="text-muted">No description available for this book.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header">
+          <h4 class="mb-0">Details</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <tbody>
+              <tr>
+                <th scope="row" style="width: 180px">ID</th>
+                <td>{{ book.id }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Title</th>
+                <td>{{ book.title }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Author</th>
+                <td>{{ book.author }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Genre</th>
+                <td>{{ book.genre }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Total Copies</th>
+                <td>{{ book.total_copies }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Available Copies</th>
+                <td>{{ book.available_copies }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Added On</th>
+                <td>{{ book.created_at.strftime('%B %d, %Y') }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Last Updated</th>
+                <td>{{ book.updated_at.strftime('%B %d, %Y') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Book Modal -->
+{% if current_user.is_authenticated and current_user.is_admin %}
+<div
+  class="modal fade"
+  id="deleteBookModal"
+  tabindex="-1"
+  aria-labelledby="deleteBookModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteBookModalLabel">Confirm Deletion</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to delete <strong>{{ book.title }}</strong>?
+        </p>
+        <p class="text-danger">This action cannot be undone.</p>
+
+        {% if book.available_copies < book.total_copies %}
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          This book has copies currently borrowed. You cannot delete it until
+          all copies are returned.
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <form
+          action="{{ url_for('books_blueprint.delete_book', book_id=book.id) }}"
+          method="POST"
+        >
+          <button
+            type="submit"
+            class="btn btn-danger"
+            {%
+            if
+            book.available_copies
+            <
+            book.total_copies
+            %}disabled{%
+            endif
+            %}
+          >
+            Delete Book
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}
