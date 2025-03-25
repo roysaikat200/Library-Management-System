@@ -7,24 +7,24 @@ from app import bcrypt, mail, db
 from app.models.user import User
 
 def send_verification_email(user):
-    token = user.verification_token
-    verification_url = url_for('auth_blueprint.verify_email', token=token, _external=True)
-    
-    # Check if we're in development mode (using environment variable or checking for debug mode)
-    if os.environ.get('FLASK_DEBUG', 'True') == 'True':
-        # In development, print the verification URL to console instead of sending email
-        print(f"===== DEVELOPMENT EMAIL =====")
-        print(f"Email Verification Link for {user.email}:")
-        print(f"{verification_url}")
-        print(f"=============================")
-        return True
-    
-    # In production, try to send the actual email
-    msg = Message('Verify Your Library Account',
-                 sender=os.environ.get('MAIL_USERNAME', 'library@example.com'),
-                 recipients=[user.email])
-    
-    msg.body = f'''To verify your account, please visit the following link:
+    try:
+        token = user.verification_token
+        verification_url = url_for('auth_blueprint.verify_email', token=token, _external=True)
+        
+        # Development mode check
+        if os.environ.get('FLASK_DEBUG', 'True').lower() == 'true':
+            print(f"===== DEVELOPMENT EMAIL =====")
+            print(f"Email Verification Link for {user.email}:")
+            print(f"{verification_url}")
+            print(f"=============================")
+            return True
+        
+        # Production email sending
+        msg = Message('Verify Your Library Account',
+                     sender=os.environ.get('MAIL_USERNAME'),
+                     recipients=[user.email])
+        
+        msg.body = f'''To verify your account, please visit the following link:
 {verification_url}
 
 If you did not make this request, please ignore this email and no changes will be made.
@@ -34,16 +34,15 @@ This link will expire in 24 hours.
 Thank you,
 The Library Management Team
 '''
-    
-    msg.html = f'''
+        
+        msg.html = f'''
 <p>To verify your account, please click the link below:</p>
 <p><a href="{verification_url}">Verify Your Account</a></p>
 <p>If you did not make this request, please ignore this email and no changes will be made.</p>
 <p>This link will expire in 24 hours.</p>
 <p>Thank you,<br>The Library Management Team</p>
 '''
-    
-    try:
+        
         mail.send(msg)
         return True
     except Exception as e:

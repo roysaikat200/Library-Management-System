@@ -2,11 +2,12 @@
 
 import os
 import logging
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from config import Config
 
 logging.basicConfig(level=logging.DEBUG)
@@ -16,41 +17,57 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 mail = Mail()
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
+migrate = Migrate()
+login_manager.login_view = 'auth_blueprint.login'
 login_manager.login_message_category = 'info'
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
     
-    # Disable CSRF protection for now as we're just prototyping
-    app.config['WTF_CSRF_ENABLED'] = False
+    # Generate random secret key if not provided
+    if not app.config.get('SECRET_KEY'):
+        app.config['SECRET_KEY'] = os.urandom(24)
+    
+    # Enable CSRF protection in production
+    app.config['WTF_CSRF_ENABLED'] = not app.config.get('FLASK_DEBUG', True)
 
-    # Initialize Flask extensions
+    # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
+    migrate.init_app(app, db)
 
     # Register blueprints
-    from app.routes.auth import auth_bp as auth
-    from app.routes.books import books_bp as books
-    from app.routes.user import user_bp as user
+    from app.routes.auth import auth_bp
+    from app.routes.books import books_bp
+    from app.routes.user import user_bp
     
-    app.register_blueprint(auth)
-    app.register_blueprint(books)
-    app.register_blueprint(user)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(books_bp)
+    app.register_blueprint(user_bp)
 
-    # Create database tables if they don't exist
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500) 
+    def internal_error(error):
+        db.session.rollback()
+        return render_template('errors/500.html'), 500
+
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('errors/403.html'), 403
+
+    # Initialize database
     with app.app_context():
         db.create_all()
-        
-        # Check if admin user exists, if not create one
         from app.models.user import User
-        admin = User.query.filter_by(role='admin').first()
-        if not admin:
+        if not User.query.filter_by(role='admin').first():
             from app.utils import create_default_admin
             create_default_admin()
-    
+
     return app

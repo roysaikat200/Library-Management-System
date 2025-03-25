@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 import os
 from datetime import datetime, timedelta
 import secrets
@@ -7,6 +7,7 @@ from app import db, bcrypt
 from app.models.user import User
 from app.forms import LoginForm, SignupForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.utils import send_verification_email, send_reset_email
+from urllib.parse import urlparse, urljoin
 
 auth_bp = Blueprint('auth_blueprint', __name__, url_prefix='/auth')
 
@@ -14,28 +15,28 @@ auth_bp = Blueprint('auth_blueprint', __name__, url_prefix='/auth')
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('user.dashboard'))
+        return redirect(url_for('user_blueprint.dashboard'))
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter_by(email=form.email.data.lower().strip()).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            # In development mode, bypass verification check
-            if not user.is_verified and os.environ.get('FLASK_DEBUG', 'True') != 'True':
-                flash('Please verify your email before logging in.', 'warning')
-                return redirect(url_for('auth.login'))
-            
+            # Add remember_me duration
+            if form.remember.data:
+                session.permanent = True
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            if next_page:
+            if next_page and url_is_safe(next_page):
                 return redirect(next_page)
-            if user.is_admin:
-                return redirect(url_for('user.admin_dashboard'))
-            return redirect(url_for('user.dashboard'))
-        else:
-            flash('Login Failed. Please check email and password', 'danger')
+            return redirect(url_for('user_blueprint.dashboard'))
+        flash('Invalid email or password.', 'danger')
     
-    return render_template('login.html', form=form, title='Login')
+    return render_template('login.html', form=form)
+
+def url_is_safe(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
