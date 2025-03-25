@@ -84,7 +84,7 @@ def signup():
             
             flash('Your account has been created! Please check your email to verify your account.', 'success')
         
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth_blueprint.login'))
     
     return render_template('signup.html', form=form, title='Sign Up')
 

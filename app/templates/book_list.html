@@ -29,8 +29,8 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <label for="genreFilter" class="form-label">Filter by Genre</label>
-                    <select class="form-select" id="genreFilter" name="genre">
+                    <!-- <label for="genreFilter" class="form-label">Filter by Genre</label> -->
+                    <select class="form-select" id="genreFilter" name="genre" title="Filter by Genre">
                         <option value="">All Genres</option>
                         {% for genre in genres %}
                         <option value="{{ genre }}" {% if genre == genre_filter %}selected{% endif %}>{{ genre }}</option>
@@ -92,8 +92,9 @@
             <ul class="pagination justify-content-center">
                 {% if pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('books_blueprint.book_list', page=pagination.prev_num, search=search_term, genre=genre_filter) }}">
-                        Previous
+                    <a class="page-link" href="{{ url_for('books_blueprint.book_list', page=pagination.prev_num, search=search_term, genre=genre_filter) }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="visually-hidden">Previous</span>
                     </a>
                 </li>
                 {% else %}

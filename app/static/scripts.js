@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
 
+    // Flash message auto-dismiss after 1 minute
+    setTimeout(function() {
+        document.querySelectorAll('.alert-dismissible').forEach(alert => {
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500); // Ensure complete removal after fading
+        });
+    }, 10000); // 1 minute (60,000 milliseconds)
+
     // Add event listener to search form
     const searchForm = document.getElementById('searchForm');
     if (searchForm) {
